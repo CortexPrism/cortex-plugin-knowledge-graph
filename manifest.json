@@ -1,0 +1,186 @@
+{
+  "name": "cortex-plugin-knowledge-graph",
+  "version": "1.0.0",
+  "description": "Personal Knowledge Graph Builder — auto-extracts entities and relationships from chat sessions, CR documents, and tool outputs to build a graph stored alongside vector memory. Enables graph-traversal queries via tools.",
+  "kind": "esm",
+  "entryPoint": "mod.ts",
+  "runtime": "deno",
+  "author": "CortexPrism",
+  "license": "MIT",
+  "repository": "https://github.com/CortexPrism/cortex-plugin-knowledge-graph",
+  "capabilities": [
+    "tools",
+    "memory:store",
+    "fs:read"
+  ],
+  "tools": [
+    {
+      "name": "graph_add_entity",
+      "description": "Add an entity node to the knowledge graph",
+      "params": [
+        {
+          "name": "name",
+          "type": "string",
+          "description": "Entity name",
+          "required": true
+        },
+        {
+          "name": "entity_type",
+          "type": "string",
+          "description": "Entity type",
+          "required": true,
+          "enum": ["person", "project", "service", "concept", "file", "tool", "decision"]
+        },
+        {
+          "name": "properties",
+          "type": "string",
+          "description": "JSON object of key-value properties",
+          "required": false
+        },
+        {
+          "name": "source",
+          "type": "string",
+          "description": "Where this entity was discovered",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "graph_add_relationship",
+      "description": "Add a relationship edge between two entities",
+      "params": [
+        {
+          "name": "from_entity",
+          "type": "string",
+          "description": "Source entity name",
+          "required": true
+        },
+        {
+          "name": "to_entity",
+          "type": "string",
+          "description": "Target entity name",
+          "required": true
+        },
+        {
+          "name": "relationship",
+          "type": "string",
+          "description": "Relationship type",
+          "required": true,
+          "enum": ["depends_on", "implements", "references", "owns", "triggers", "part_of", "related_to"]
+        },
+        {
+          "name": "weight",
+          "type": "number",
+          "description": "Relationship weight (default 1.0)",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "graph_query",
+      "description": "Query the knowledge graph with graph traversal",
+      "params": [
+        {
+          "name": "query",
+          "type": "string",
+          "description": "Natural language query, e.g. 'Find entities related to X'",
+          "required": true
+        },
+        {
+          "name": "entity_name",
+          "type": "string",
+          "description": "Focus entity for the query",
+          "required": false
+        },
+        {
+          "name": "max_depth",
+          "type": "number",
+          "description": "Maximum traversal depth (default 2)",
+          "required": false
+        },
+        {
+          "name": "relationship_filter",
+          "type": "string",
+          "description": "Comma-separated relationship types to filter by",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "graph_extract_from_text",
+      "description": "Extract entities and relationships from text content using pattern matching",
+      "params": [
+        {
+          "name": "content",
+          "type": "string",
+          "description": "Text content to extract from",
+          "required": true
+        },
+        {
+          "name": "source",
+          "type": "string",
+          "description": "Source identifier for the extracted entities",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "graph_visualize",
+      "description": "Return a visualization-ready graph structure",
+      "params": [
+        {
+          "name": "root_entity",
+          "type": "string",
+          "description": "Root entity to center visualization on",
+          "required": false
+        },
+        {
+          "name": "max_nodes",
+          "type": "number",
+          "description": "Maximum nodes in the visualization (default 50)",
+          "required": false
+        },
+        {
+          "name": "format",
+          "type": "string",
+          "description": "Output format",
+          "required": false,
+          "enum": ["mermaid", "json", "dot"]
+        }
+      ]
+    },
+    {
+      "name": "graph_stats",
+      "description": "Get statistics about the knowledge graph",
+      "params": []
+    }
+  ],
+  "ui": {
+    "settings": {
+      "General": {
+        "fields": [
+          {
+            "key": "defaultMaxDepth",
+            "type": "number",
+            "default": 3,
+            "label": "Default max traversal depth"
+          },
+          {
+            "key": "autoExtract",
+            "type": "boolean",
+            "default": true,
+            "label": "Auto-extract from sessions"
+          }
+        ]
+      }
+    }
+  },
+  "dependencies": {},
+  "peerDependencies": {
+    "cortex": ">=1.0.0"
+  },
+  "aiDisclosure": {
+    "tools": ["Claude Code (Anthropic) — scaffold and implementation"],
+    "humanReview": true
+  }
+}

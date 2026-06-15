@@ -1,0 +1,38 @@
+{
+  "name": "cortex-plugin-knowledge-graph",
+  "version": "1.0.0",
+  "description": "Personal Knowledge Graph Builder — auto-extracts entities and relationships from chat sessions, CR documents, and tool outputs to build a graph stored alongside existing vector memory",
+  "type": "module",
+  "main": "mod.ts",
+  "scripts": {
+    "dev": "node --watch mod.ts",
+    "test": "node --test test/**/*.test.js",
+    "fmt": "prettier --write .",
+    "fmt:check": "prettier --check .",
+    "lint": "eslint ."
+  },
+  "keywords": [
+    "cortex",
+    "plugin",
+    "cortex-plugin",
+    "knowledge-graph",
+    "esm"
+  ],
+  "author": "CortexPrism",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/CortexPrism/cortex-plugin-knowledge-graph.git"
+  },
+  "dependencies": {
+    "@cortexprism/plugin-sdk": "^1.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "eslint": "^9.0.0",
+    "prettier": "^3.0.0"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}
