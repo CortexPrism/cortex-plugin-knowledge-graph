@@ -1,7 +1,7 @@
 {
   "name": "cortex-plugin-knowledge-graph",
   "version": "1.0.0",
-  "description": "Personal Knowledge Graph Builder — auto-extracts entities and relationships from chat sessions, CR documents, and tool outputs to build a graph stored alongside vector memory. Enables graph-traversal queries via tools.",
+  "description": "Personal Knowledge Graph Builder \u2014 auto-extracts entities and relationships from chat sessions, CR documents, and tool outputs to build a graph stored alongside vector memory. Enables graph-traversal queries via tools.",
   "kind": "esm",
   "entryPoint": "mod.ts",
   "runtime": "deno",
@@ -29,7 +29,15 @@
           "type": "string",
           "description": "Entity type",
           "required": true,
-          "enum": ["person", "project", "service", "concept", "file", "tool", "decision"]
+          "enum": [
+            "person",
+            "project",
+            "service",
+            "concept",
+            "file",
+            "tool",
+            "decision"
+          ]
         },
         {
           "name": "properties",
@@ -66,7 +74,15 @@
           "type": "string",
           "description": "Relationship type",
           "required": true,
-          "enum": ["depends_on", "implements", "references", "owns", "triggers", "part_of", "related_to"]
+          "enum": [
+            "depends_on",
+            "implements",
+            "references",
+            "owns",
+            "triggers",
+            "part_of",
+            "related_to"
+          ]
         },
         {
           "name": "weight",
@@ -145,7 +161,11 @@
           "type": "string",
           "description": "Output format",
           "required": false,
-          "enum": ["mermaid", "json", "dot"]
+          "enum": [
+            "mermaid",
+            "json",
+            "dot"
+          ]
         }
       ]
     },
@@ -156,8 +176,9 @@
     }
   ],
   "ui": {
-    "settings": {
-      "General": {
+    "settings": [
+      {
+        "section": "General",
         "fields": [
           {
             "key": "defaultMaxDepth",
@@ -173,14 +194,16 @@
           }
         ]
       }
-    }
+    ]
   },
   "dependencies": {},
   "peerDependencies": {
     "cortex": ">=1.0.0"
   },
   "aiDisclosure": {
-    "tools": ["Claude Code (Anthropic) — scaffold and implementation"],
+    "tools": [
+      "Claude Code (Anthropic) \u2014 scaffold and implementation"
+    ],
     "humanReview": true
   }
 }
