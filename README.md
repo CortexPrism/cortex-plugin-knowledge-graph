@@ -1,6 +1,8 @@
 # Cortex Plugin — Knowledge Graph
 
-Personal Knowledge Graph Builder — auto-extracts entities and relationships from chat sessions, CR documents, and tool outputs to build a graph (nodes + edges) stored alongside existing vector memory. Enables graph-traversal queries like "show me everything related to the auth service."
+Personal Knowledge Graph Builder — auto-extracts entities and relationships from chat sessions, CR
+documents, and tool outputs to build a graph (nodes + edges) stored alongside existing vector
+memory. Enables graph-traversal queries like "show me everything related to the auth service."
 
 ## Installation
 
@@ -46,15 +48,21 @@ cortex tool call graph_visualize --format mermaid
 
 ### graph_add_entity
 
-Add an entity node to the knowledge graph. If the entity already exists, it will be updated with the new properties and type.
+Add an entity node to the knowledge graph. If the entity already exists, it will be updated with the
+new properties and type.
 
 **Parameters:**
+
 - `name` (string, required) — Entity name
-- `entity_type` (string, required) — Entity type: `person`, `project`, `service`, `concept`, `file`, `tool`, `decision`
-- `properties` (string, optional) — JSON object of key-value properties (e.g. `{"language": "go", "port": "8080"}`)
-- `source` (string, optional) — Where this entity was discovered (e.g. "chat-session-42", "CR-doc-ops")
+- `entity_type` (string, required) — Entity type: `person`, `project`, `service`, `concept`, `file`,
+  `tool`, `decision`
+- `properties` (string, optional) — JSON object of key-value properties (e.g.
+  `{"language": "go", "port": "8080"}`)
+- `source` (string, optional) — Where this entity was discovered (e.g. "chat-session-42",
+  "CR-doc-ops")
 
 **Example:**
+
 ```bash
 cortex tool call graph_add_entity \
   --name "Auth Service" \
@@ -64,8 +72,9 @@ cortex tool call graph_add_entity \
 ```
 
 **Output:**
+
 ```json
-{"name":"Auth Service","entity_type":"service","action":"created","totalNodes":1}
+{ "name": "Auth Service", "entity_type": "service", "action": "created", "totalNodes": 1 }
 ```
 
 ---
@@ -75,12 +84,15 @@ cortex tool call graph_add_entity \
 Add a relationship edge between two entities. Auto-creates entity nodes if they don't exist.
 
 **Parameters:**
+
 - `from_entity` (string, required) — Source entity name
 - `to_entity` (string, required) — Target entity name
-- `relationship` (string, required) — Relationship type: `depends_on`, `implements`, `references`, `owns`, `triggers`, `part_of`, `related_to`
+- `relationship` (string, required) — Relationship type: `depends_on`, `implements`, `references`,
+  `owns`, `triggers`, `part_of`, `related_to`
 - `weight` (number, optional, default 1.0) — Relationship strength/weight
 
 **Example:**
+
 ```bash
 cortex tool call graph_add_relationship \
   --from_entity "Auth Service" \
@@ -90,8 +102,16 @@ cortex tool call graph_add_relationship \
 ```
 
 **Output:**
+
 ```json
-{"from":"Auth Service","to":"User Database","relationship":"depends_on","weight":2.0,"totalEdges":1,"totalNodes":2}
+{
+  "from": "Auth Service",
+  "to": "User Database",
+  "relationship": "depends_on",
+  "weight": 2.0,
+  "totalEdges": 1,
+  "totalNodes": 2
+}
 ```
 
 ---
@@ -101,12 +121,15 @@ cortex tool call graph_add_relationship \
 Query the knowledge graph using BFS graph traversal from matched entities.
 
 **Parameters:**
+
 - `query` (string, required) — Natural language query text, matched against entity names
 - `entity_name` (string, optional) — Specific entity to center the search on
 - `max_depth` (number, default 2) — Maximum traversal depth from starting entities
-- `relationship_filter` (string, optional) — Comma-separated relationship types to filter (e.g. `depends_on,references`)
+- `relationship_filter` (string, optional) — Comma-separated relationship types to filter (e.g.
+  `depends_on,references`)
 
 **Example:**
+
 ```bash
 cortex tool call graph_query \
   --query "Show me everything related to auth" \
@@ -116,17 +139,18 @@ cortex tool call graph_query \
 ```
 
 **Output:**
+
 ```json
 {
   "query": "Show me everything related to auth",
   "matchedEntities": ["auth service"],
   "maxDepth": 3,
   "entities": [
-    {"name": "Auth Service", "entity_type": "service", "source": "architecture-review"},
-    {"name": "Token Manager", "entity_type": "service", "source": "text-extraction"}
+    { "name": "Auth Service", "entity_type": "service", "source": "architecture-review" },
+    { "name": "Token Manager", "entity_type": "service", "source": "text-extraction" }
   ],
   "relationships": [
-    {"from": "Auth Service", "to": "Token Manager", "relationship": "depends_on", "weight": 1.0}
+    { "from": "Auth Service", "to": "Token Manager", "relationship": "depends_on", "weight": 1.0 }
   ],
   "summary": "2 entities, 1 relationships at depth 3"
 }
@@ -136,13 +160,16 @@ cortex tool call graph_query \
 
 ### graph_extract_from_text
 
-Scan text content for entities and relationships using regex pattern matching. Detects entity mentions (projects, services, files, tools, decisions, concepts, people) and relationship keywords.
+Scan text content for entities and relationships using regex pattern matching. Detects entity
+mentions (projects, services, files, tools, decisions, concepts, people) and relationship keywords.
 
 **Parameters:**
+
 - `content` (string, required) — Text content to extract from
 - `source` (string, optional) — Source identifier for extracted entities
 
 **Supported entity patterns:**
+
 - Emails → `person`
 - `service` keyword mentions → `service`
 - `project:` / `repo:` prefixes → `project`
@@ -152,6 +179,7 @@ Scan text content for entities and relationships using regex pattern matching. D
 - `module:` / `system:` / `component:` / `framework:` prefixes → `concept`
 
 **Supported relationship patterns:**
+
 - `depends on`, `requires`, `needs` → `depends_on`
 - `implements`, `realizes` → `implements`
 - `references`, `calls`, `uses`, `imports` → `references`
@@ -161,6 +189,7 @@ Scan text content for entities and relationships using regex pattern matching. D
 - `related to`, `connected to` → `related_to`
 
 **Example:**
+
 ```bash
 cortex tool call graph_extract_from_text \
   --content "The auth service depends on the token manager. The notification service triggers email delivery." \
@@ -174,11 +203,13 @@ cortex tool call graph_extract_from_text \
 Export the knowledge graph in a visualization-ready format.
 
 **Parameters:**
+
 - `root_entity` (string, optional) — Center the visualization around this entity
 - `max_nodes` (number, default 50) — Maximum nodes to include
 - `format` (string, enum: `mermaid`, `json`, `dot`) — Output format
 
 **Example:**
+
 ```bash
 # Mermaid diagram (renderable in Markdown)
 cortex tool call graph_visualize --root_entity "Auth Service" --format mermaid
@@ -194,26 +225,30 @@ cortex tool call graph_visualize --format dot
 
 ### graph_stats
 
-Get statistics about the knowledge graph including entity distribution, relationship counts, and graph density.
+Get statistics about the knowledge graph including entity distribution, relationship counts, and
+graph density.
 
 **Parameters:**
+
 - None
 
 **Example:**
+
 ```bash
 cortex tool call graph_stats
 ```
 
 **Output:**
+
 ```json
 {
   "totalNodes": 15,
   "totalEdges": 23,
-  "entityTypes": {"service": 5, "concept": 4, "file": 3, "decision": 2, "tool": 1},
-  "relationshipTypes": {"depends_on": 8, "references": 6, "triggers": 5, "part_of": 4},
+  "entityTypes": { "service": 5, "concept": 4, "file": 3, "decision": 2, "tool": 1 },
+  "relationshipTypes": { "depends_on": 8, "references": 6, "triggers": 5, "part_of": 4 },
   "mostConnectedEntity": "Auth Service",
   "maxDegree": 7,
-  "sources": {"architecture-review": 5, "text-extraction": 10},
+  "sources": { "architecture-review": 5, "text-extraction": 10 },
   "graphDensity": "0.1095"
 }
 ```
@@ -238,24 +273,25 @@ Configure this plugin in `~/.cortex/config.json`:
 
 ### UI Settings
 
-| Section | Field | Type | Default | Description |
-|---------|-------|------|---------|-------------|
-| General | `defaultMaxDepth` | number | 3 | Default max traversal depth for graph queries |
-| General | `autoExtract` | boolean | true | Automatically extract entities from sessions |
+| Section | Field             | Type    | Default | Description                                   |
+| ------- | ----------------- | ------- | ------- | --------------------------------------------- |
+| General | `defaultMaxDepth` | number  | 3       | Default max traversal depth for graph queries |
+| General | `autoExtract`     | boolean | true    | Automatically extract entities from sessions  |
 
 ## Capabilities
 
 This plugin declares:
+
 - `tools` — Provides callable tools
 - `memory:store` — Persists graph data to plugin state
 - `fs:read` — Reads filesystem for text extraction sources
 
 ## AI Disclosure
 
-| Field | Value |
-|-------|-------|
-| Tools Used | Claude Code (Anthropic) — scaffold and implementation |
-| Human Review | All code reviewed and verified by a human developer |
+| Field        | Value                                                 |
+| ------------ | ----------------------------------------------------- |
+| Tools Used   | Claude Code (Anthropic) — scaffold and implementation |
+| Human Review | All code reviewed and verified by a human developer   |
 
 ## Development
 
@@ -340,6 +376,7 @@ For detailed publishing instructions, see [Publishing Plugins](../docs/publishin
 **Error:** `Plugin failed to load: Invalid manifest`
 
 **Solution:** Validate your `manifest.json`:
+
 ```bash
 deno task validate
 ```
@@ -349,6 +386,7 @@ deno task validate
 **Error:** `Tool not found`
 
 **Solution:** Ensure the tool is:
+
 1. Exported in the `tools` array in `mod.ts`
 2. Declared in `manifest.json` under `tools`
 3. Plugin is enabled: `cortex plugin enable cortex-plugin-knowledge-graph`
@@ -358,6 +396,7 @@ deno task validate
 **Error:** Graph is empty after restart
 
 **Solution:** Verify:
+
 1. The plugin's `onLoad` hook is loading state from `ctx.state`
 2. `memory:store` capability is declared in manifest
 3. Plugin is not running in a sandbox that blocks state persistence
@@ -367,6 +406,7 @@ deno task validate
 See [Best Practices](../docs/best-practices.md) for complete guidelines.
 
 ✅ **Do:**
+
 - Validate all tool parameters including enums
 - Handle errors gracefully with descriptive messages
 - Return ToolCallResult with `success`, `output`/`error`, and `durationMs`
@@ -375,6 +415,7 @@ See [Best Practices](../docs/best-practices.md) for complete guidelines.
 - Persist state after every mutation
 
 ❌ **Don't:**
+
 - Skip input validation
 - Use `ctx.logger` or `ctx.config` in tool execute (use ToolContext only)
 - Pass PluginContext to execute handlers

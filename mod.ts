@@ -1,4 +1,4 @@
-import type { Tool, ToolContext, PluginContext, ToolCallResult } from 'cortex/plugins';
+import type { PluginContext, Tool, ToolCallResult, ToolContext } from './types.ts';
 
 type EntityType = 'person' | 'project' | 'service' | 'concept' | 'file' | 'tool' | 'decision';
 type RelationshipType =
@@ -30,7 +30,13 @@ interface Edge {
 
 interface GraphState {
   nodes: Record<string, EntityNode>;
-  edges: { from: string; to: string; relationship: RelationshipType; weight: number; createdAt: string }[];
+  edges: {
+    from: string;
+    to: string;
+    relationship: RelationshipType;
+    weight: number;
+    createdAt: string;
+  }[];
 }
 
 interface PluginConfig {
@@ -60,12 +66,33 @@ const RELATIONSHIP_TYPES: RelationshipType[] = [
 
 const ENTITY_EXTRACTION_PATTERNS: { pattern: RegExp; type: EntityType; label: string }[] = [
   { pattern: /\b([\w.-]+@[\w.-]+\.\w+)\b/g, type: 'person', label: 'email' },
-  { pattern: /\b(?:auth|payment|notification|user|search|analytics|logging|messaging|storage)\s+service\b/gi, type: 'service', label: 'service-mention' },
-  { pattern: /\b(?:project|repo):\s*["']?([A-Za-z0-9_.-]+)["']?/gi, type: 'project', label: 'project-ref' },
-  { pattern: /\b(?:file|path):\s*["']?([A-Za-z0-9_/.\\-]+)["']?/gi, type: 'file', label: 'file-ref' },
+  {
+    pattern:
+      /\b(?:auth|payment|notification|user|search|analytics|logging|messaging|storage)\s+service\b/gi,
+    type: 'service',
+    label: 'service-mention',
+  },
+  {
+    pattern: /\b(?:project|repo):\s*["']?([A-Za-z0-9_.-]+)["']?/gi,
+    type: 'project',
+    label: 'project-ref',
+  },
+  {
+    pattern: /\b(?:file|path):\s*["']?([A-Za-z0-9_/.\\-]+)["']?/gi,
+    type: 'file',
+    label: 'file-ref',
+  },
   { pattern: /\b(?:tool|cli):\s*["']?([A-Za-z0-9_-]+)["']?/gi, type: 'tool', label: 'tool-ref' },
-  { pattern: /\b(?:decision|ADR):\s*["']?([A-Za-z0-9_\s-]+)["']?/gi, type: 'decision', label: 'decision-ref' },
-  { pattern: /\b(?:module|system|component|framework):\s*["']?([A-Za-z0-9_-]+)["']?/gi, type: 'concept', label: 'concept-ref' },
+  {
+    pattern: /\b(?:decision|ADR):\s*["']?([A-Za-z0-9_\s-]+)["']?/gi,
+    type: 'decision',
+    label: 'decision-ref',
+  },
+  {
+    pattern: /\b(?:module|system|component|framework):\s*["']?([A-Za-z0-9_-]+)["']?/gi,
+    type: 'concept',
+    label: 'concept-ref',
+  },
 ];
 
 const RELATIONSHIP_EXTRACTION_PATTERNS: { pattern: RegExp; relationship: RelationshipType }[] = [
@@ -126,8 +153,18 @@ const graphAddEntityTool: Tool = {
         required: true,
         enum: ENTITY_TYPES,
       },
-      { name: 'properties', type: 'string', description: 'JSON object of key-value properties', required: false },
-      { name: 'source', type: 'string', description: 'Where this entity was discovered', required: false },
+      {
+        name: 'properties',
+        type: 'string',
+        description: 'JSON object of key-value properties',
+        required: false,
+      },
+      {
+        name: 'source',
+        type: 'string',
+        description: 'Where this entity was discovered',
+        required: false,
+      },
     ],
     capabilities: ['memory:store'],
   },
@@ -137,7 +174,13 @@ const graphAddEntityTool: Tool = {
     try {
       const name = args.name;
       if (!name || typeof name !== 'string') {
-        return { toolName: 'graph_add_entity', success: false, output: '', error: 'name must be a non-empty string', durationMs: Date.now() - start };
+        return {
+          toolName: 'graph_add_entity',
+          success: false,
+          output: '',
+          error: 'name must be a non-empty string',
+          durationMs: Date.now() - start,
+        };
       }
 
       const entityType = args.entity_type as string;
@@ -159,10 +202,22 @@ const graphAddEntityTool: Tool = {
         try {
           properties = JSON.parse(args.properties);
           if (typeof properties !== 'object' || Array.isArray(properties)) {
-            return { toolName: 'graph_add_entity', success: false, output: '', error: 'properties must be a JSON object', durationMs: Date.now() - start };
+            return {
+              toolName: 'graph_add_entity',
+              success: false,
+              output: '',
+              error: 'properties must be a JSON object',
+              durationMs: Date.now() - start,
+            };
           }
         } catch {
-          return { toolName: 'graph_add_entity', success: false, output: '', error: 'Invalid JSON in properties', durationMs: Date.now() - start };
+          return {
+            toolName: 'graph_add_entity',
+            success: false,
+            output: '',
+            error: 'Invalid JSON in properties',
+            durationMs: Date.now() - start,
+          };
         }
       }
 
@@ -190,7 +245,12 @@ const graphAddEntityTool: Tool = {
       return {
         toolName: 'graph_add_entity',
         success: true,
-        output: JSON.stringify({ name, entity_type: entityType, action: existing ? 'updated' : 'created', totalNodes: nodes.size }),
+        output: JSON.stringify({
+          name,
+          entity_type: entityType,
+          action: existing ? 'updated' : 'created',
+          totalNodes: nodes.size,
+        }),
         durationMs: Date.now() - start,
       };
     } catch (error) {
@@ -219,7 +279,12 @@ const graphAddRelationshipTool: Tool = {
         required: true,
         enum: RELATIONSHIP_TYPES,
       },
-      { name: 'weight', type: 'number', description: 'Relationship weight (default 1.0)', required: false },
+      {
+        name: 'weight',
+        type: 'number',
+        description: 'Relationship weight (default 1.0)',
+        required: false,
+      },
     ],
     capabilities: ['memory:store'],
   },
@@ -231,10 +296,22 @@ const graphAddRelationshipTool: Tool = {
       const toEntity = args.to_entity;
 
       if (!fromEntity || typeof fromEntity !== 'string') {
-        return { toolName: 'graph_add_relationship', success: false, output: '', error: 'from_entity must be a non-empty string', durationMs: Date.now() - start };
+        return {
+          toolName: 'graph_add_relationship',
+          success: false,
+          output: '',
+          error: 'from_entity must be a non-empty string',
+          durationMs: Date.now() - start,
+        };
       }
       if (!toEntity || typeof toEntity !== 'string') {
-        return { toolName: 'graph_add_relationship', success: false, output: '', error: 'to_entity must be a non-empty string', durationMs: Date.now() - start };
+        return {
+          toolName: 'graph_add_relationship',
+          success: false,
+          output: '',
+          error: 'to_entity must be a non-empty string',
+          durationMs: Date.now() - start,
+        };
       }
 
       const relationship = args.relationship as string;
@@ -252,17 +329,37 @@ const graphAddRelationshipTool: Tool = {
       const toNorm = normalizeName(toEntity);
 
       if (!nodes.has(fromNorm)) {
-        nodes.set(fromNorm, { name: fromEntity, entity_type: 'concept', properties: {}, source: 'auto-created', createdAt: now(), updatedAt: now() });
+        nodes.set(fromNorm, {
+          name: fromEntity,
+          entity_type: 'concept',
+          properties: {},
+          source: 'auto-created',
+          createdAt: now(),
+          updatedAt: now(),
+        });
       }
       if (!nodes.has(toNorm)) {
-        nodes.set(toNorm, { name: toEntity, entity_type: 'concept', properties: {}, source: 'auto-created', createdAt: now(), updatedAt: now() });
+        nodes.set(toNorm, {
+          name: toEntity,
+          entity_type: 'concept',
+          properties: {},
+          source: 'auto-created',
+          createdAt: now(),
+          updatedAt: now(),
+        });
       }
 
       let weight = 1.0;
       if (args.weight !== undefined && args.weight !== null) {
         weight = Number(args.weight);
         if (isNaN(weight) || weight <= 0) {
-          return { toolName: 'graph_add_relationship', success: false, output: '', error: 'weight must be a positive number', durationMs: Date.now() - start };
+          return {
+            toolName: 'graph_add_relationship',
+            success: false,
+            output: '',
+            error: 'weight must be a positive number',
+            durationMs: Date.now() - start,
+          };
         }
       }
 
@@ -301,7 +398,9 @@ const graphAddRelationshipTool: Tool = {
         toolName: 'graph_add_relationship',
         success: false,
         output: '',
-        error: `Failed to add relationship: ${error instanceof Error ? error.message : String(error)}`,
+        error: `Failed to add relationship: ${
+          error instanceof Error ? error.message : String(error)
+        }`,
         durationMs: Date.now() - start,
       };
     }
@@ -313,10 +412,30 @@ const graphQueryTool: Tool = {
     name: 'graph_query',
     description: 'Query the knowledge graph with graph traversal',
     params: [
-      { name: 'query', type: 'string', description: "Natural language query, e.g. 'Find entities related to X'", required: true },
-      { name: 'entity_name', type: 'string', description: 'Focus entity for the query', required: false },
-      { name: 'max_depth', type: 'number', description: 'Maximum traversal depth (default 2)', required: false },
-      { name: 'relationship_filter', type: 'string', description: 'Comma-separated relationship types to filter by', required: false },
+      {
+        name: 'query',
+        type: 'string',
+        description: "Natural language query, e.g. 'Find entities related to X'",
+        required: true,
+      },
+      {
+        name: 'entity_name',
+        type: 'string',
+        description: 'Focus entity for the query',
+        required: false,
+      },
+      {
+        name: 'max_depth',
+        type: 'number',
+        description: 'Maximum traversal depth (default 2)',
+        required: false,
+      },
+      {
+        name: 'relationship_filter',
+        type: 'string',
+        description: 'Comma-separated relationship types to filter by',
+        required: false,
+      },
     ],
     capabilities: ['memory:store'],
   },
@@ -326,21 +445,33 @@ const graphQueryTool: Tool = {
     try {
       const query = args.query;
       if (!query || typeof query !== 'string') {
-        return { toolName: 'graph_query', success: false, output: '', error: 'query must be a non-empty string', durationMs: Date.now() - start };
+        return {
+          toolName: 'graph_query',
+          success: false,
+          output: '',
+          error: 'query must be a non-empty string',
+          durationMs: Date.now() - start,
+        };
       }
 
-      const maxDepth = args.max_depth !== undefined ? Math.max(1, Number(args.max_depth) || 2) : config.defaultMaxDepth;
+      const maxDepth = args.max_depth !== undefined
+        ? Math.max(1, Number(args.max_depth) || 2)
+        : config.defaultMaxDepth;
 
       let filterSet: Set<RelationshipType> | null = null;
       if (args.relationship_filter && typeof args.relationship_filter === 'string') {
-        const filters = args.relationship_filter.split(',').map((s) => s.trim().toLowerCase()) as RelationshipType[];
+        const filters = args.relationship_filter.split(',').map((s) =>
+          s.trim().toLowerCase()
+        ) as RelationshipType[];
         const valid = filters.filter((f) => RELATIONSHIP_TYPES.includes(f));
         if (valid.length === 0) {
           return {
             toolName: 'graph_query',
             success: false,
             output: '',
-            error: `Invalid relationship filter. Must be one or more of: ${RELATIONSHIP_TYPES.join(', ')}`,
+            error: `Invalid relationship filter. Must be one or more of: ${
+              RELATIONSHIP_TYPES.join(', ')
+            }`,
             durationMs: Date.now() - start,
           };
         }
@@ -351,7 +482,10 @@ const graphQueryTool: Tool = {
       const matchingNames: string[] = [];
 
       for (const [name, node] of nodes) {
-        if (lowerQuery.includes(name) || (args.entity_name && name === normalizeName(args.entity_name as string))) {
+        if (
+          lowerQuery.includes(name) ||
+          (args.entity_name && name === normalizeName(args.entity_name as string))
+        ) {
           matchingNames.push(name);
         }
       }
@@ -364,7 +498,10 @@ const graphQueryTool: Tool = {
       }
 
       const visited = new Set<string>();
-      const result: { entities: EntityNode[]; relationships: Edge[] } = { entities: [], relationships: [] };
+      const result: { entities: EntityNode[]; relationships: Edge[] } = {
+        entities: [],
+        relationships: [],
+      };
 
       function traverse(currentNodes: string[], depth: number): void {
         if (depth > maxDepth) return;
@@ -407,14 +544,19 @@ const graphQueryTool: Tool = {
         query,
         matchedEntities: matchingNames,
         maxDepth,
-        entities: result.entities.map((e) => ({ name: e.name, entity_type: e.entity_type, source: e.source })),
+        entities: result.entities.map((e) => ({
+          name: e.name,
+          entity_type: e.entity_type,
+          source: e.source,
+        })),
         relationships: result.relationships.map((e) => ({
           from: nodes.get(e.from)?.name || e.from,
           to: nodes.get(e.to)?.name || e.to,
           relationship: e.relationship,
           weight: e.weight,
         })),
-        summary: `${result.entities.length} entities, ${result.relationships.length} relationships at depth ${maxDepth}`,
+        summary:
+          `${result.entities.length} entities, ${result.relationships.length} relationships at depth ${maxDepth}`,
       });
 
       return { toolName: 'graph_query', success: true, output, durationMs: Date.now() - start };
@@ -435,8 +577,18 @@ const graphExtractFromTextTool: Tool = {
     name: 'graph_extract_from_text',
     description: 'Extract entities and relationships from text content using pattern matching',
     params: [
-      { name: 'content', type: 'string', description: 'Text content to extract from', required: true },
-      { name: 'source', type: 'string', description: 'Source identifier for the extracted entities', required: false },
+      {
+        name: 'content',
+        type: 'string',
+        description: 'Text content to extract from',
+        required: true,
+      },
+      {
+        name: 'source',
+        type: 'string',
+        description: 'Source identifier for the extracted entities',
+        required: false,
+      },
     ],
     capabilities: ['memory:store'],
   },
@@ -459,7 +611,12 @@ const graphExtractFromTextTool: Tool = {
       const ts = now();
 
       const extractedEntities: { name: string; entity_type: EntityType }[] = [];
-      const extractedRelationships: { from: string; to: string; relationship: RelationshipType; weight: number }[] = [];
+      const extractedRelationships: {
+        from: string;
+        to: string;
+        relationship: RelationshipType;
+        weight: number;
+      }[] = [];
 
       const seenEntities = new Set<string>();
 
@@ -514,11 +671,23 @@ const graphExtractFromTextTool: Tool = {
 
           if (connectedFrom && connectedTo && connectedFrom !== connectedTo) {
             const dupCheck = edges.some(
-              (e) => e.from === connectedFrom && e.to === connectedTo && e.relationship === relationship,
+              (e) =>
+                e.from === connectedFrom && e.to === connectedTo && e.relationship === relationship,
             );
             if (!dupCheck) {
-              edges.push({ from: connectedFrom, to: connectedTo, relationship, weight: 1.0, createdAt: ts });
-              extractedRelationships.push({ from: connectedFrom, to: connectedTo, relationship, weight: 1.0 });
+              edges.push({
+                from: connectedFrom,
+                to: connectedTo,
+                relationship,
+                weight: 1.0,
+                createdAt: ts,
+              });
+              extractedRelationships.push({
+                from: connectedFrom,
+                to: connectedTo,
+                relationship,
+                weight: 1.0,
+              });
             }
           }
         }
@@ -545,7 +714,9 @@ const graphExtractFromTextTool: Tool = {
         toolName: 'graph_extract_from_text',
         success: false,
         output: '',
-        error: `Failed to extract from text: ${error instanceof Error ? error.message : String(error)}`,
+        error: `Failed to extract from text: ${
+          error instanceof Error ? error.message : String(error)
+        }`,
         durationMs: Date.now() - start,
       };
     }
@@ -557,8 +728,18 @@ const graphVisualizeTool: Tool = {
     name: 'graph_visualize',
     description: 'Return a visualization-ready graph structure',
     params: [
-      { name: 'root_entity', type: 'string', description: 'Root entity to center visualization on', required: false },
-      { name: 'max_nodes', type: 'number', description: 'Maximum nodes in the visualization (default 50)', required: false },
+      {
+        name: 'root_entity',
+        type: 'string',
+        description: 'Root entity to center visualization on',
+        required: false,
+      },
+      {
+        name: 'max_nodes',
+        type: 'number',
+        description: 'Maximum nodes in the visualization (default 50)',
+        required: false,
+      },
       {
         name: 'format',
         type: 'string',
@@ -574,7 +755,9 @@ const graphVisualizeTool: Tool = {
     const start = Date.now();
     try {
       const maxNodes = Math.max(1, Number(args.max_nodes) || 50);
-      const format: VizFormat = (['mermaid', 'json', 'dot'].includes(args.format as string) ? args.format : 'json') as VizFormat;
+      const format: VizFormat = (['mermaid', 'json', 'dot'].includes(args.format as string)
+        ? args.format
+        : 'json') as VizFormat;
 
       let resultEntities: EntityNode[];
       let resultEdges: Edge[];
@@ -598,25 +781,34 @@ const graphVisualizeTool: Tool = {
 
         while (queue.length > 0 && resultEntities.length < maxNodes) {
           const current = queue.shift()!;
-          if (visited.has(current)) continue;
+          if (visited.has(current)) {
+            continue;
+          }
           visited.add(current);
 
           const node = nodes.get(current);
-          if (node) resultEntities.push(node);
+          if (node) {
+            resultEntities.push(node);
+          }
 
           for (const edge of edges) {
             if (edge.from === current || edge.to === current) {
               resultEdges.push(edge);
               const neighbor = edge.from === current ? edge.to : edge.from;
-              if (!visited.has(neighbor)) queue.push(neighbor);
+              if (!visited.has(neighbor)) {
+                queue.push(neighbor);
+              }
             }
           }
         }
       } else {
         resultEntities = Array.from(nodes.values()).slice(0, maxNodes);
         resultEdges = edges.filter(
-          (e) => resultEntities.some((n) => normalizeName(n.name) === e.from) &&
-                 resultEntities.some((n) => normalizeName(n.name) === e.to),
+          (e) =>
+            resultEntities.some((n) =>
+              normalizeName(n.name) === e.from
+            ) &&
+            resultEntities.some((n) => normalizeName(n.name) === e.to),
         );
       }
 
@@ -654,7 +846,9 @@ const graphVisualizeTool: Tool = {
           const fromId = entityIndex.get(edge.from);
           const toId = entityIndex.get(edge.to);
           if (fromId && toId) {
-            lines.push(`  ${fromId} -> ${toId} [label="${edge.relationship}", weight=${edge.weight}];`);
+            lines.push(
+              `  ${fromId} -> ${toId} [label="${edge.relationship}", weight=${edge.weight}];`,
+            );
           }
         }
         lines.push('}');
@@ -690,7 +884,9 @@ const graphVisualizeTool: Tool = {
         toolName: 'graph_visualize',
         success: false,
         output: '',
-        error: `Failed to visualize graph: ${error instanceof Error ? error.message : String(error)}`,
+        error: `Failed to visualize graph: ${
+          error instanceof Error ? error.message : String(error)
+        }`,
         durationMs: Date.now() - start,
       };
     }
