@@ -970,6 +970,7 @@ const graphStatsTool: Tool = {
 
 export async function onLoad(ctx: PluginContext): Promise<void> {
   pluginCtx = ctx;
+  ctx.logger.info('[cortex-plugin-knowledge-graph] Loaded');
   const rawConfig = await ctx.config.get();
   config = {
     defaultMaxDepth: rawConfig?.defaultMaxDepth ?? 3,

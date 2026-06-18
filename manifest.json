@@ -1,6 +1,6 @@
 {
   "name": "cortex-plugin-knowledge-graph",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Personal Knowledge Graph Builder \u2014 auto-extracts entities and relationships from chat sessions, CR documents, and tool outputs to build a graph stored alongside vector memory. Enables graph-traversal queries via tools.",
   "kind": "esm",
   "entryPoint": "mod.ts",
@@ -205,5 +205,6 @@
       "Claude Code (Anthropic) \u2014 scaffold and implementation"
     ],
     "humanReview": true
-  }
+  },
+  "homepage": "https://github.com/CortexPrism/cortex-plugin-knowledge-graph"
 }
