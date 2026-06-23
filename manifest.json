@@ -1,6 +1,6 @@
 {
   "name": "cortex-plugin-knowledge-graph",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Personal Knowledge Graph Builder \u2014 auto-extracts entities and relationships from chat sessions, CR documents, and tool outputs to build a graph stored alongside vector memory. Enables graph-traversal queries via tools.",
   "kind": "esm",
   "entryPoint": "mod.ts",
@@ -183,13 +183,13 @@
           {
             "key": "defaultMaxDepth",
             "type": "number",
-            "default": 3,
+            "defaultValue": 3,
             "label": "Default max traversal depth"
           },
           {
             "key": "autoExtract",
             "type": "boolean",
-            "default": true,
+            "defaultValue": true,
             "label": "Auto-extract from sessions"
           }
         ]
@@ -198,7 +198,7 @@
   },
   "dependencies": {},
   "peerDependencies": {
-    "cortex": ">=1.0.0"
+    "cortex": ">=0.51.0"
   },
   "aiDisclosure": {
     "tools": [

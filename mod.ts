@@ -1,5 +1,5 @@
 // deno-lint-ignore-file
-import type { PluginContext, Tool, ToolCallResult, ToolContext } from './types.ts';
+import type { PluginContext, Tool, ToolCallResult } from 'cortex/plugins';
 
 type EntityType = 'person' | 'project' | 'service' | 'concept' | 'file' | 'tool' | 'decision';
 type RelationshipType =
@@ -170,7 +170,7 @@ const graphAddEntityTool: Tool = {
     capabilities: ['memory:store'],
   },
 
-  execute: async (args: Record<string, unknown>, _ctx: ToolContext): Promise<ToolCallResult> => {
+  execute: async (args: Record<string, unknown>, _ctx: PluginContext): Promise<ToolCallResult> => {
     const start = Date.now();
     try {
       const name = args.name;
@@ -290,7 +290,7 @@ const graphAddRelationshipTool: Tool = {
     capabilities: ['memory:store'],
   },
 
-  execute: async (args: Record<string, unknown>, _ctx: ToolContext): Promise<ToolCallResult> => {
+  execute: async (args: Record<string, unknown>, _ctx: PluginContext): Promise<ToolCallResult> => {
     const start = Date.now();
     try {
       const fromEntity = args.from_entity;
@@ -441,7 +441,7 @@ const graphQueryTool: Tool = {
     capabilities: ['memory:store'],
   },
 
-  execute: async (args: Record<string, unknown>, _ctx: ToolContext): Promise<ToolCallResult> => {
+  execute: async (args: Record<string, unknown>, _ctx: PluginContext): Promise<ToolCallResult> => {
     const start = Date.now();
     try {
       const query = args.query;
@@ -594,7 +594,7 @@ const graphExtractFromTextTool: Tool = {
     capabilities: ['memory:store'],
   },
 
-  execute: async (args: Record<string, unknown>, _ctx: ToolContext): Promise<ToolCallResult> => {
+  execute: async (args: Record<string, unknown>, _ctx: PluginContext): Promise<ToolCallResult> => {
     const start = Date.now();
     try {
       const content = args.content;
@@ -752,7 +752,7 @@ const graphVisualizeTool: Tool = {
     capabilities: ['memory:store'],
   },
 
-  execute: async (args: Record<string, unknown>, _ctx: ToolContext): Promise<ToolCallResult> => {
+  execute: async (args: Record<string, unknown>, _ctx: PluginContext): Promise<ToolCallResult> => {
     const start = Date.now();
     try {
       const maxNodes = Math.max(1, Number(args.max_nodes) || 50);
@@ -902,7 +902,7 @@ const graphStatsTool: Tool = {
     capabilities: ['memory:store'],
   },
 
-  execute: async (_args: Record<string, unknown>, _ctx: ToolContext): Promise<ToolCallResult> => {
+  execute: async (_args: Record<string, unknown>, _ctx: PluginContext): Promise<ToolCallResult> => {
     const start = Date.now();
     try {
       const entityTypeCounts: Record<string, number> = {};
